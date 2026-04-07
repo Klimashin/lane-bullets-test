@@ -85,11 +85,16 @@ namespace _Project.Scripts.Gameplay.Simulation
         {
             var events = new List<LaneEvent>();
 
-            foreach (var building in lane.Buildings)
+            foreach (var slot in lane.BuildSlots)
             {
-                if (prevX < building.PositionX && building.PositionX <= nextX)
+                if (slot.Building == null || slot.Building.Type == BuildingType.Gun)
                 {
-                    events.Add(new LaneEvent(building));
+                    continue;
+                }
+
+                if (prevX < slot.Building.PositionX && slot.Building.PositionX <= nextX)
+                {
+                    events.Add(new LaneEvent(slot.Building));
                 }
             }
 
@@ -125,7 +130,7 @@ namespace _Project.Scripts.Gameplay.Simulation
 
         private void ProcessBuilding(
             ProjectileState projectile,
-            ModifierBuildingState? building,
+            BuildingState? building,
             List<ProjectileState> pendingProjectiles,
             SimulationStepResult result)
         {
@@ -133,26 +138,26 @@ namespace _Project.Scripts.Gameplay.Simulation
             {
                 return;
             }
-            
+
             result.TriggeredBuildings.Add(new BuildingTriggerInfo(projectile.Id, building.Id));
 
-            switch (building.Type)
+            switch (building.Definition)
             {
-                case ModifierBuildingType.DamageBoost:
-                    projectile.Damage *= 1.5f;
+                case DamageBoostBuildingDefinition damageBoost:
+                    projectile.Damage *= damageBoost.DamageMultiplier;
                     break;
 
-                case ModifierBuildingType.PierceBoost:
-                    projectile.RemainingHits += 1;
+                case PierceBoostBuildingDefinition pierceBoost:
+                    projectile.RemainingHits += pierceBoost.HitsBonus;
                     break;
 
-                case ModifierBuildingType.Copy:
+                case CopyBuildingDefinition copyDef:
                     if (!projectile.CanBeCopied)
                     {
                         return;
                     }
 
-                    var copy = CreateCopy(projectile, building.PositionX);
+                    var copy = CreateCopy(projectile, building.PositionX, copyDef.CopyDamageFraction);
                     pendingProjectiles.Add(copy);
                     break;
             }
@@ -179,7 +184,7 @@ namespace _Project.Scripts.Gameplay.Simulation
             }
         }
 
-        private ProjectileState CreateCopy(ProjectileState source, float spawnX)
+        private ProjectileState CreateCopy(ProjectileState source, float spawnX, float damageFraction)
         {
             source.CanBeCopied = false;
 
@@ -187,7 +192,7 @@ namespace _Project.Scripts.Gameplay.Simulation
                 id: _nextProjectileId++,
                 positionX: spawnX,
                 speed: source.Speed,
-                damage: source.Damage * 0.5f,
+                damage: source.Damage * damageFraction,
                 remainingHits: source.RemainingHits,
                 canBeCopied: false);
         }
@@ -198,20 +203,23 @@ namespace _Project.Scripts.Gameplay.Simulation
             List<ProjectileState> pendingProjectiles,
             SimulationStepResult result)
         {
-            foreach (var gun in lane.Guns)
+            foreach (var slot in lane.BuildSlots)
             {
-                SimulateGun(gun, deltaTime, pendingProjectiles, result);
+                if (slot.Building?.Type == BuildingType.Gun)
+                {
+                    SimulateGun(slot.Building, deltaTime, pendingProjectiles, result);
+                }
             }
         }
 
         private void SimulateGun(
-            GunState gun,
+            BuildingState gun,
             float deltaTime,
             List<ProjectileState> pendingProjectiles,
             SimulationStepResult result)
         {
             gun.CooldownRemaining -= deltaTime;
-
+            
             while (gun.CooldownRemaining <= 0f)
             {
                 var projectile = CreateProjectileFromGun(gun);
@@ -224,7 +232,7 @@ namespace _Project.Scripts.Gameplay.Simulation
             }
         }
 
-        private ProjectileState CreateProjectileFromGun(GunState gun)
+        private ProjectileState CreateProjectileFromGun(BuildingState gun)
         {
             return new ProjectileState(
                 id: _nextProjectileId++,
@@ -232,7 +240,7 @@ namespace _Project.Scripts.Gameplay.Simulation
                 speed: gun.ProjectileSpeed,
                 damage: gun.ProjectileDamage,
                 remainingHits: gun.ProjectileHits,
-                canBeCopied: gun.CanProjectileBeCopied);
+                canBeCopied: true);
         }
     }
 }

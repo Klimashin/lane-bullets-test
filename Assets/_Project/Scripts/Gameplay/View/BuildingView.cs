@@ -9,7 +9,7 @@ namespace _Project.Scripts.Gameplay.View
 
         public int BuildingId { get; private set; }
 
-        public void Initialize(int buildingId, ModifierBuildingType type)
+        public void Initialize(int buildingId, BuildingType type)
         {
             BuildingId = buildingId;
         }
@@ -17,6 +17,11 @@ namespace _Project.Scripts.Gameplay.View
         public void SetWorldPosition(Vector3 worldPosition)
         {
             transform.position = worldPosition;
+        }
+
+        public void PlayFireFeedback()
+        {
+            // implement punch scale
         }
     }
 }

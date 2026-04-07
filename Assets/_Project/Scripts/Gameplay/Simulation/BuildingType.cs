@@ -1,7 +1,8 @@
 namespace _Project.Scripts.Gameplay.Simulation
 {
-    public enum ModifierBuildingType
+    public enum BuildingType
     {
+        Gun,
         DamageBoost,
         PierceBoost,
         Copy

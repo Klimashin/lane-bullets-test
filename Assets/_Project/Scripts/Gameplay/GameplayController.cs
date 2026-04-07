@@ -14,12 +14,13 @@ namespace _Project.Scripts.Gameplay
 
         [SerializeField] private ProjectileView _projectilePrefab = null!;
         [SerializeField] private TargetView _targetPrefab = null!;
-        [SerializeField] private BuildingView _buildingPrefab = null!;
-        [SerializeField] private GunView _gunPrefab = null!;
+        [SerializeField] private BuildSlotView _buildSlotViewPrefab = null!;
 
-        [SerializeField] private List<BuildingPlacement> _buildingPlacements = new ();
-        [SerializeField] private List<TargetPlacement> _targetPlacements = new ();
-        [SerializeField] private List<GunPlacement> _gunPlacements = new ();
+        [SerializeField] private int _buildSlotCount = 5;
+        [SerializeField] private float _buildSlotStartX = 2f;
+        [SerializeField] private float _buildSlotSpacing = 3f;
+        
+        [SerializeField] private List<TargetPlacement> _targetPlacements = new();
 
         [SerializeField] private float _simulationTick = 0.02f;
         [SerializeField] private float _laneLength = 20f;
@@ -31,7 +32,7 @@ namespace _Project.Scripts.Gameplay
         private readonly Dictionary<int, ProjectileView> _projectileViews = new();
         private readonly Dictionary<int, TargetView> _targetViews = new();
         private readonly Dictionary<int, BuildingView> _buildingViews = new();
-        private readonly Dictionary<int, GunView> _gunViews = new();
+        private readonly Dictionary<int, BuildSlotView> _slotViews = new();
 
         private float _tickAccumulator;
 
@@ -49,7 +50,7 @@ namespace _Project.Scripts.Gameplay
             {
                 return;
             }
-            
+
             _tickAccumulator += Time.deltaTime;
 
             while (_tickAccumulator >= _simulationTick)
@@ -67,12 +68,10 @@ namespace _Project.Scripts.Gameplay
         {
             var lane = new LaneState();
 
-            foreach (var placement in _buildingPlacements)
+            for (int i = 0; i < _buildSlotCount; i++)
             {
-                lane.Buildings.Add(new ModifierBuildingState(
-                    placement.Id,
-                    placement.PositionX,
-                    placement.Type));
+                float posX = _buildSlotStartX + i * _buildSlotSpacing;
+                lane.BuildSlots.Add(new BuildSlotState(i, posX));
             }
 
             foreach (var placement in _targetPlacements)
@@ -82,31 +81,21 @@ namespace _Project.Scripts.Gameplay
                     placement.PositionX,
                     placement.Health));
             }
-            
-            foreach (var placement in _gunPlacements)
-            {
-                lane.Guns.Add(new GunState(
-                    id: placement.Id,
-                    positionX: placement.PositionX,
-                    projectileSpeed: placement.ProjectileSpeed,
-                    projectileDamage: placement.ProjectileDamage,
-                    projectileHits: placement.ProjectileHits,
-                    fireInterval: placement.FireInterval,
-                    canProjectileBeCopied: placement.CanProjectileBeCopied,
-                    initialCooldown: placement.InitialCooldown));
-            }
 
             return lane;
         }
-        
+
         private void CreateViews(LaneState lane)
         {
-            foreach (var building in lane.Buildings)
+            foreach (var slot in lane.BuildSlots)
             {
-                var view = Instantiate(_buildingPrefab, _buildingRoot);
-                view.Initialize(building.Id, building.Type);
-                view.SetWorldPosition(LaneToWorld(building.PositionX));
-                _buildingViews.Add(building.Id, view);
+                var slotView = Instantiate(_buildSlotViewPrefab, _buildingRoot);
+                slotView.Initialize(slot.Id);
+                slotView.transform.position = LaneToWorld(slot.PositionX);
+                slotView.DragStarted += OnSlotDragStarted;
+                slotView.Dragged += OnSlotDragged;
+                slotView.DragEnded += OnSlotDragEnded;
+                _slotViews.Add(slot.Id, slotView);
             }
 
             foreach (var target in lane.Targets)
@@ -116,27 +105,112 @@ namespace _Project.Scripts.Gameplay
                 view.SetWorldPosition(LaneToWorld(target.PositionX));
                 _targetViews.Add(target.Id, view);
             }
-            
-            foreach (var gun in lane.Guns)
+        }
+
+        public bool TryPlaceBuilding(int slotId, BuildingDefinition definition)
+        {
+            if (_laneState == null)
             {
-                var view = Instantiate(_gunPrefab, _buildingRoot);
-                view.Initialize(gun.Id);
-                view.SetWorldPosition(LaneToWorld(gun.PositionX));
-                _gunViews.Add(gun.Id, view);
+                return false;
+            }
+
+            if (slotId < 0 || slotId >= _laneState.BuildSlots.Count)
+            {
+                return false;
+            }
+
+            var slot = _laneState.BuildSlots[slotId];
+
+            if (slot.IsOccupied)
+            {
+                return false;
+            }
+
+            BuildingState building;
+
+            if (definition is GunBuildingDefinition gun)
+            {
+                building = new BuildingState(slotId, slot.PositionX, gun);
+            }
+            else
+            {
+                building = new BuildingState(slotId, slot.PositionX, definition);
+            }
+
+            slot.PlaceBuilding(building);
+            SpawnBuildingView(building, definition);
+
+            if (_slotViews.TryGetValue(slotId, out var slotView))
+            {
+                slotView.SetOccupied(true);
+            }
+
+            return true;
+        }
+
+        private const float RemoveDistanceThreshold = 0.5f;
+
+        private void OnSlotDragStarted(BuildSlotView slotView)
+        {
+        }
+
+        private void OnSlotDragged(BuildSlotView slotView, Vector3 worldPosition)
+        {
+            if (_buildingViews.TryGetValue(slotView.SlotId, out var buildingView))
+            {
+                buildingView.SetWorldPosition(worldPosition);
             }
         }
-        
+
+        private void OnSlotDragEnded(BuildSlotView slotView, Vector3 worldPosition)
+        {
+            if (_laneState == null)
+            {
+                return;
+            }
+
+            var slot = _laneState.BuildSlots[slotView.SlotId];
+            var slotWorldPosition = LaneToWorld(slot.PositionX);
+
+            if (Vector3.Distance(worldPosition, slotWorldPosition) > RemoveDistanceThreshold)
+            {
+                slot.RemoveBuilding();
+                slotView.SetOccupied(false);
+
+                if (_buildingViews.TryGetValue(slotView.SlotId, out var buildingView))
+                {
+                    Destroy(buildingView.gameObject);
+                    _buildingViews.Remove(slotView.SlotId);
+                }
+            }
+            else
+            {
+                if (_buildingViews.TryGetValue(slotView.SlotId, out var buildingView))
+                {
+                    buildingView.SetWorldPosition(slotWorldPosition);
+                }
+            }
+        }
+
+        private void SpawnBuildingView(BuildingState building, BuildingDefinition definition)
+        {
+            var view = Instantiate(definition.Prefab, _buildingRoot);
+            view.Initialize(building.Id, building.Type);
+            view.SetWorldPosition(LaneToWorld(building.PositionX));
+            _buildingViews.Add(building.Id, view);
+        }
+
         private Vector3 LaneToWorld(float laneX, float y = 0f)
         {
             return new Vector3(laneX * _unitsPerLaneX, y, 0f);
         }
-        
+
         private void SyncViews(LaneState lane)
         {
             SyncProjectileViews(lane);
             SyncTargetViews(lane);
         }
-        
+
         private void SyncProjectileViews(LaneState lane)
         {
             var aliveProjectileIds = new HashSet<int>();
@@ -171,7 +245,7 @@ namespace _Project.Scripts.Gameplay
                 _projectileViews.Remove(id);
             }
         }
-        
+
         private void SyncTargetViews(LaneState lane)
         {
             var aliveTargetIds = new HashSet<int>();
@@ -206,7 +280,7 @@ namespace _Project.Scripts.Gameplay
                 _targetViews.Remove(id);
             }
         }
-        
+
         private void ApplyStepVisuals(SimulationStepResult stepResult)
         {
             foreach (var hit in stepResult.TargetHits)
@@ -218,23 +292,15 @@ namespace _Project.Scripts.Gameplay
             {
                 Debug.Log($"Spawned projectile {spawn.ProjectileId} at X={spawn.PositionX}");
             }
-            
+
             foreach (var fire in stepResult.GunFires)
             {
-                if (_gunViews.TryGetValue(fire.GunId, out var gunView))
+                if (_buildingViews.TryGetValue(fire.GunId, out var buildingView))
                 {
-                    gunView.PlayFireFeedback();
+                    buildingView.PlayFireFeedback();
                 }
             }
         }
-    }
-    
-    [Serializable]
-    public sealed class BuildingPlacement
-    {
-        public int Id;
-        public float PositionX;
-        public ModifierBuildingType Type;
     }
 
     [Serializable]
@@ -243,18 +309,5 @@ namespace _Project.Scripts.Gameplay
         public int Id;
         public float PositionX;
         public float Health = 10f;
-    }
-    
-    [Serializable]
-    public sealed class GunPlacement
-    {
-        public int Id;
-        public float PositionX;
-        public float ProjectileSpeed = 5f;
-        public float ProjectileDamage = 10f;
-        public int ProjectileHits = 1;
-        public float FireInterval = 1f;
-        public bool CanProjectileBeCopied = true;
-        public float InitialCooldown = 0f;
     }
 }

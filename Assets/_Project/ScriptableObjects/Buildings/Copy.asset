@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a9355bed83eea4686bf0c7b8c3edf4, type: 3}
+  m_Name: Copy
+  m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.CopyBuildingDefinition
+  Prefab: {fileID: 5147479550644452778, guid: fd3d63fc78b004b409b249367747c475, type: 3}
+  UIPrefab: {fileID: 6058542951956254023, guid: 1bb9b52f50e8ff74da853f641b4e49de, type: 3}

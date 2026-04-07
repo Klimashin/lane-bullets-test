@@ -10,10 +10,10 @@ namespace _Project.Scripts.Gameplay.Simulation
     {
         public LaneEventType Type { get; }
         public float PositionX { get; }
-        public ModifierBuildingState? Building { get; }
+        public BuildingState? Building { get; }
         public TargetState? Target { get; }
 
-        public LaneEvent(ModifierBuildingState building)
+        public LaneEvent(BuildingState building)
         {
             Type = LaneEventType.Building;
             PositionX = building.PositionX;

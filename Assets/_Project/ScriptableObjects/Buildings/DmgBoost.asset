@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2038dc16616680341b3fd31a99d9851f, type: 3}
+  m_Name: DmgBoost
+  m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.DamageBoostBuildingDefinition
+  Prefab: {fileID: 5147479550644452778, guid: 6695349b2b8e474468bb65ea10946d57, type: 3}
+  UIPrefab: {fileID: 6058542951956254023, guid: 78feb499f33c8a34b8005bb0e0864bdf, type: 3}

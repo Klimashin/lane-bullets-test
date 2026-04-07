@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6e2531061155e5498894fe24b1ddd1a, type: 3}
+  m_Name: Pierce
+  m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.PierceBoostBuildingDefinition
+  Prefab: {fileID: 5147479550644452778, guid: ecfefffa2a766304e88e10322d475eba, type: 3}
+  UIPrefab: {fileID: 6058542951956254023, guid: bab521369e1347e40872ca1012523c98, type: 3}
