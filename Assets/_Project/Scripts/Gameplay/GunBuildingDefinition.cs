@@ -12,7 +12,11 @@ namespace _Project.Scripts.Gameplay
         public float ProjectileDamage = 10f;
         public int ProjectileHits = 1;
         public float FireInterval = 1f;
-        public bool CanProjectileBeCopied = true;
-        public float InitialCooldown = 0f;
+        public float InitialCooldown = 1f;
+
+        public override BuildingState CreateState(int id, float positionX)
+        {
+            return new GunBuildingState(id, positionX, this);
+        }
     }
 }

@@ -8,5 +8,10 @@ namespace _Project.Scripts.Gameplay
     {
         public override BuildingType Type => BuildingType.PierceBoost;
         public int HitsBonus = 1;
+
+        public override BuildingState CreateState(int id, float positionX)
+        {
+            return new BuildingState(id, positionX, this);
+        }
     }
 }

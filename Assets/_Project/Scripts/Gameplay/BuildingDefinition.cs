@@ -9,5 +9,6 @@ namespace _Project.Scripts.Gameplay
         public BuildingView Prefab = null!;
         public GameObject UIPrefab = null!;
         public abstract BuildingType Type { get; }
+        public abstract BuildingState CreateState(int id, float positionX);
     }
 }

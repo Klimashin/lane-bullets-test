@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using _Project.Scripts.Gameplay.View;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace _Project.Scripts.Gameplay
 {
@@ -9,6 +10,7 @@ namespace _Project.Scripts.Gameplay
         [SerializeField] private Canvas _canvas = null!;
         [SerializeField] private Camera _camera = null!;
         [SerializeField] private GameplayController _gameplayController = null!;
+        [SerializeField] private Button _fireButton = null!;
         [SerializeField] private Transform _buildingListParent = null!;
         [SerializeField] private List<BuildingDefinition> _availableBuildings = new();
 
@@ -18,6 +20,8 @@ namespace _Project.Scripts.Gameplay
 
         private void Start()
         {
+            _fireButton.onClick.AddListener(_gameplayController.TriggerAllGuns);
+
             foreach (var definition in _availableBuildings)
             {
                 if (definition == null || definition.UIPrefab == null)

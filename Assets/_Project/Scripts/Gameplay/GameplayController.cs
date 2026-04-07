@@ -17,7 +17,7 @@ namespace _Project.Scripts.Gameplay
         [SerializeField] private BuildSlotView _buildSlotViewPrefab = null!;
 
         [SerializeField] private int _buildSlotCount = 5;
-        [SerializeField] private float _buildSlotStartX = 2f;
+        [SerializeField] private float _laneStartX = 2f;
         [SerializeField] private float _buildSlotSpacing = 3f;
         
         [SerializeField] private List<TargetPlacement> _targetPlacements = new();
@@ -38,7 +38,7 @@ namespace _Project.Scripts.Gameplay
 
         private void Start()
         {
-            _simulator = new LaneSimulator(20f);
+            _simulator = new LaneSimulator(_laneStartX, _laneStartX + _laneLength);
             _laneState = CreateLane();
 
             CreateViews(_laneState);
@@ -70,7 +70,7 @@ namespace _Project.Scripts.Gameplay
 
             for (int i = 0; i < _buildSlotCount; i++)
             {
-                float posX = _buildSlotStartX + i * _buildSlotSpacing;
+                float posX = _laneStartX + i * _buildSlotSpacing;
                 lane.BuildSlots.Add(new BuildSlotState(i, posX));
             }
 
@@ -107,6 +107,22 @@ namespace _Project.Scripts.Gameplay
             }
         }
 
+        public void TriggerAllGuns()
+        {
+            if (_laneState == null)
+            {
+                return;
+            }
+
+            foreach (var slot in _laneState.BuildSlots)
+            {
+                if (slot.Building is GunBuildingState gun)
+                {
+                    gun.PendingFire = true;
+                }
+            }
+        }
+
         public bool TryPlaceBuilding(int slotId, BuildingDefinition definition)
         {
             if (_laneState == null)
@@ -126,17 +142,7 @@ namespace _Project.Scripts.Gameplay
                 return false;
             }
 
-            BuildingState building;
-
-            if (definition is GunBuildingDefinition gun)
-            {
-                building = new BuildingState(slotId, slot.PositionX, gun);
-            }
-            else
-            {
-                building = new BuildingState(slotId, slot.PositionX, definition);
-            }
-
+            var building = definition.CreateState(slotId, slot.PositionX);
             slot.PlaceBuilding(building);
             SpawnBuildingView(building, definition);
 

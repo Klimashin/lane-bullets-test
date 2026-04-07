@@ -8,5 +8,10 @@ namespace _Project.Scripts.Gameplay
     {
         public override BuildingType Type => BuildingType.DamageBoost;
         public float DamageMultiplier = 1.5f;
+
+        public override BuildingState CreateState(int id, float positionX)
+        {
+            return new BuildingState(id, positionX, this);
+        }
     }
 }

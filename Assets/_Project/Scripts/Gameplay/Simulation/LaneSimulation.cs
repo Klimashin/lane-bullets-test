@@ -7,10 +7,12 @@ namespace _Project.Scripts.Gameplay.Simulation
     public sealed class LaneSimulator
     {
         private int _nextProjectileId = 1;
+        private float _laneStartX;
         private float _laneMaxX;
 
-        public LaneSimulator(float laneMaxX)
+        public LaneSimulator(float laneStartX, float laneMaxX)
         {
+            _laneStartX = laneStartX;
             _laneMaxX = laneMaxX;
         }
 
@@ -157,8 +159,9 @@ namespace _Project.Scripts.Gameplay.Simulation
                         return;
                     }
 
-                    var copy = CreateCopy(projectile, building.PositionX, copyDef.CopyDamageFraction);
+                    var copy = CreateCopy(projectile, _laneStartX, copyDef.CopyDamageFraction);
                     pendingProjectiles.Add(copy);
+                    result.SpawnedProjectiles.Add(new ProjectileSpawnInfo(copy.Id, copy.PositionX));
                     break;
             }
         }
@@ -205,41 +208,41 @@ namespace _Project.Scripts.Gameplay.Simulation
         {
             foreach (var slot in lane.BuildSlots)
             {
-                if (slot.Building?.Type == BuildingType.Gun)
+                if (slot.Building is GunBuildingState gun)
                 {
-                    SimulateGun(slot.Building, deltaTime, pendingProjectiles, result);
+                    SimulateGun(gun, deltaTime, pendingProjectiles, result);
                 }
             }
         }
 
         private void SimulateGun(
-            BuildingState gun,
+            GunBuildingState gun,
             float deltaTime,
             List<ProjectileState> pendingProjectiles,
             SimulationStepResult result)
         {
-            gun.CooldownRemaining -= deltaTime;
-            
-            while (gun.CooldownRemaining <= 0f)
+            if (!gun.PendingFire)
             {
-                var projectile = CreateProjectileFromGun(gun);
-                pendingProjectiles.Add(projectile);
-
-                result.SpawnedProjectiles.Add(new ProjectileSpawnInfo(projectile.Id, projectile.PositionX));
-                result.GunFires.Add(new GunFireInfo(gun.Id, projectile.Id));
-
-                gun.CooldownRemaining += gun.FireInterval;
+                return;
             }
+
+            gun.PendingFire = false;
+
+            var projectile = CreateProjectileFromGun(gun);
+            pendingProjectiles.Add(projectile);
+
+            result.SpawnedProjectiles.Add(new ProjectileSpawnInfo(projectile.Id, projectile.PositionX));
+            result.GunFires.Add(new GunFireInfo(gun.Id, projectile.Id));
         }
 
-        private ProjectileState CreateProjectileFromGun(BuildingState gun)
+        private ProjectileState CreateProjectileFromGun(GunBuildingState gun)
         {
             return new ProjectileState(
                 id: _nextProjectileId++,
                 positionX: gun.PositionX,
-                speed: gun.ProjectileSpeed,
-                damage: gun.ProjectileDamage,
-                remainingHits: gun.ProjectileHits,
+                speed: gun.Definition.ProjectileSpeed,
+                damage: gun.Definition.ProjectileDamage,
+                remainingHits: gun.Definition.ProjectileHits,
                 canBeCopied: true);
         }
     }
