@@ -15,5 +15,6 @@ namespace _Project.Scripts.Gameplay.Simulation
         public List<float> TargetHealthValues = new();
         public float TargetsStartX = 10f;
         public float TargetsSpacing = 2f;
+        public float TargetOffsetX = 0f;
     }
 }

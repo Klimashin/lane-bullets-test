@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using _Project.Scripts.Gameplay.Data;
+using _Project.Scripts.Gameplay.Simulation;
 using _Project.Scripts.Gameplay.View;
 using Reflex.Attributes;
 using TMPro;
@@ -12,6 +13,8 @@ namespace _Project.Scripts.Gameplay
     {
         [SerializeField] private Canvas _canvas = null!;
         [SerializeField] private Button _fireButton = null!;
+        [SerializeField] private Button _modeToggleButton = null!;
+        [SerializeField] private TextMeshProUGUI _modeToggleText = null!;
         [SerializeField] private Slider _speedSlider = null!;
         [SerializeField] private TextMeshProUGUI _speedText = null!;
         [SerializeField] private Transform _buildingListParent = null!;
@@ -35,7 +38,9 @@ namespace _Project.Scripts.Gameplay
         private void Start()
         {
             UpdateSpeedText();
+            UpdateModeUI();
             _fireButton.onClick.AddListener(_gameplayController.TriggerAllGuns);
+            _modeToggleButton.onClick.AddListener(OnModeToggleClicked);
             _speedSlider.onValueChanged.AddListener(v =>
             {
                 _gameplayController.SetSimulationSpeed((int)v);
@@ -64,6 +69,23 @@ namespace _Project.Scripts.Gameplay
                 uiView.Dragged += OnDragged;
                 uiView.DragEnded += OnDragEnded;
             }
+        }
+
+        private void OnModeToggleClicked()
+        {
+            var newMode = _gameplayController.GunsControlMode == GunsControlMode.Manual
+                ? GunsControlMode.Auto
+                : GunsControlMode.Manual;
+
+            _gameplayController.SetGunsControlMode(newMode);
+            UpdateModeUI();
+        }
+
+        private void UpdateModeUI()
+        {
+            bool isManual = _gameplayController.GunsControlMode == GunsControlMode.Manual;
+            _fireButton.gameObject.SetActive(isManual);
+            _modeToggleText.text = isManual ? "Switch to AUTO guns mode" : "Switch to MANUAL guns mode";
         }
 
         private void UpdateSpeedText()

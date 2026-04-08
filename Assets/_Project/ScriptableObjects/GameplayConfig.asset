@@ -29,6 +29,7 @@ MonoBehaviour:
   SimulationTick: 0.02
   TargetsStartX: 2
   TargetsSpacing: 1.4
+  TargetOffsetX: -0.7
   LaneStartX: -9
   LaneLength: 20
   BuildSlotSpacing: 1.1

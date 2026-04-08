@@ -7,6 +7,9 @@ namespace _Project.Scripts.Gameplay.View
     public sealed class ProjectileView : MonoBehaviour
     {
         [SerializeField] private TMP_Text _damageText = null!;
+        [SerializeField] private SpriteRenderer _borderRenderer = null!;
+        [SerializeField] private Color _normalColor = Color.white;
+        [SerializeField] private Color _copyColor = Color.cyan;
 
         public int ProjectileId { get; private set; }
         
@@ -20,6 +23,11 @@ namespace _Project.Scripts.Gameplay.View
         public void SetWorldPosition(Vector3 worldPosition)
         {
             transform.position = worldPosition;
+        }
+
+        public void SetIsCopy(bool isCopy)
+        {
+            _borderRenderer.color = isCopy ? _copyColor : _normalColor;
         }
 
         public void SetDamage(float damage)

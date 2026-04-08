@@ -226,8 +226,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f75734754f48204bb88c8fb912c703c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.View.ProjectileView
-  _renderer: {fileID: 2811749763915771967}
   _damageText: {fileID: 4381335530879360282}
+  _borderRenderer: {fileID: 2424086506778369670}
+  _normalColor: {r: 0.9058824, g: 0.6666667, b: 0, a: 1}
+  _copyColor: {r: 0, g: 0.3019608, b: 0.9058824, a: 1}
 --- !u!1 &4919957041184390898
 GameObject:
   m_ObjectHideFlags: 0

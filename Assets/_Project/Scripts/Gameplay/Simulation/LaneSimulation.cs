@@ -10,14 +10,27 @@ namespace _Project.Scripts.Gameplay.Simulation
         private int _nextProjectileId = 1;
         private readonly float _laneStartX;
         private readonly float _laneMaxX;
+        private readonly float _targetOffsetX;
         private readonly List<LaneState> _laneStates = new();
 
         public IReadOnlyList<LaneState> LaneStates => _laneStates;
+
+        private GunsControlMode _mode = GunsControlMode.Manual;
+        public GunsControlMode Mode
+        {
+            get => _mode;
+            set
+            {
+                _mode = value;
+                ResetAllGunCooldowns();
+            }
+        }
 
         public LaneSimulator(LaneSimulationConfig config)
         {
             _laneStartX = config.LaneStartX;
             _laneMaxX = config.LaneStartX + config.LaneLength;
+            _targetOffsetX = config.TargetOffsetX;
 
             for (int i = 0; i < config.LanesCount; i++)
             {
@@ -197,7 +210,7 @@ namespace _Project.Scripts.Gameplay.Simulation
                     continue;
                 }
 
-                if (prevX < target.PositionX && target.PositionX <= nextX)
+                if (prevX < target.PositionX + _targetOffsetX && target.PositionX + _targetOffsetX <= nextX)
                 {
                     events.Add(new LaneEvent(target));
                 }
@@ -309,6 +322,17 @@ namespace _Project.Scripts.Gameplay.Simulation
             List<ProjectileState> pendingProjectiles,
             SimulationStepResult result)
         {
+            if (_mode == GunsControlMode.Auto)
+            {
+                gun.CooldownRemaining -= deltaTime;
+                if (gun.CooldownRemaining <= 0f)
+                {
+                    var def = (GunBuildingDefinition)gun.Definition;
+                    gun.CooldownRemaining += def.FireInterval;
+                    gun.PendingFire = true;
+                }
+            }
+
             if (!gun.PendingFire)
             {
                 return;
@@ -323,14 +347,31 @@ namespace _Project.Scripts.Gameplay.Simulation
             result.GunFires.Add(new GunFireInfo(gun.Id, projectile.Id));
         }
 
+        private void ResetAllGunCooldowns()
+        {
+            foreach (var lane in _laneStates)
+            {
+                foreach (var slot in lane.BuildSlots)
+                {
+                    if (slot.Building is GunBuildingState gun)
+                    {
+                        var def = (GunBuildingDefinition)gun.Definition;
+                        gun.CooldownRemaining = def.InitialCooldown;
+                        gun.PendingFire = false;
+                    }
+                }
+            }
+        }
+
         private ProjectileState CreateProjectileFromGun(GunBuildingState gun)
         {
+            var def = (GunBuildingDefinition)gun.Definition;
             return new ProjectileState(
                 id: _nextProjectileId++,
-                positionX: gun.PositionX + gun.Definition.SpawnOffsetX,
-                speed: gun.Definition.ProjectileSpeed,
-                damage: gun.Definition.ProjectileDamage,
-                remainingHits: gun.Definition.ProjectileHits,
+                positionX: gun.PositionX + def.SpawnOffsetX,
+                speed: def.ProjectileSpeed,
+                damage: def.ProjectileDamage,
+                remainingHits: def.ProjectileHits,
                 canBeCopied: true);
         }
     }

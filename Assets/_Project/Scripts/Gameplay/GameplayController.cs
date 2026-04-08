@@ -36,7 +36,8 @@ namespace _Project.Scripts.Gameplay
                 BuildingSlotsOffsetX = _config.BuildingSlotsOffsetX, 
                 TargetHealthValues = _config.TargetHealthValues,
                 TargetsStartX = _config.TargetsStartX,
-                TargetsSpacing = _config.TargetsSpacing
+                TargetsSpacing = _config.TargetsSpacing,
+                TargetOffsetX = _config.TargetOffsetX
             };
 
             var laneBaseY = _config.LaneBaseY;
@@ -89,6 +90,16 @@ namespace _Project.Scripts.Gameplay
         public void TriggerAllGuns()
         {
             _simulator?.TriggerAllGuns();
+        }
+
+        public GunsControlMode GunsControlMode => _simulator?.Mode ?? GunsControlMode.Manual;
+
+        public void SetGunsControlMode(GunsControlMode mode)
+        {
+            if (_simulator != null)
+            {
+                _simulator.Mode = mode;
+            }
         }
 
         public bool TryPlaceBuilding(int laneId, int slotId, BuildingDefinition definition)

@@ -147,6 +147,7 @@ namespace _Project.Scripts.Gameplay.View
 
                 view.SetWorldPosition(LaneToWorld(projectile.PositionX));
                 view.SetDamage(projectile.Damage);
+                view.SetIsCopy(!projectile.CanBeCopied);
             }
 
             var idsToRemove = new List<int>();

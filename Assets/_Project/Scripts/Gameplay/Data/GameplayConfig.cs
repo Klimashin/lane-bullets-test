@@ -18,6 +18,7 @@ namespace _Project.Scripts.Gameplay.Data
         public float SimulationTick = 0.02f;
         public float TargetsStartX = 10f;
         public float TargetsSpacing = 2f;
+        public float TargetOffsetX = 0f;
         public float LaneStartX = 2f;
         public float LaneLength = 20f;
         public float BuildSlotSpacing = 3f;
