@@ -12,13 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4dffce561de456f4687cbdc1a2571e45, type: 3}
   m_Name: GameplayConfig
   m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.Data.GameplayConfig
-  LanesCount: 3
-  BuildSlotCount: 6
-  TargetHealthValues:
-  - 2
-  - 10
-  - 100
-  - 4000
+  Lanes:
+  - BuildSlotCount: 5
+    TargetHealthValues:
+    - 2
+    - 10
+    - 100
+    - 4000
+  - BuildSlotCount: 5
+    TargetHealthValues:
+    - 2
+    - 10
+    - 100
+    - 4000
+  - BuildSlotCount: 4
+    TargetHealthValues:
+    - 10
+    - 100
+    - 200
   Buildings:
   - {fileID: 11400000, guid: c315022a6f30af345a69dd7a1dfb7f44, type: 2}
   - {fileID: 11400000, guid: b12393d42fe5ab8478f9cf33d0c04b1d, type: 2}
@@ -27,10 +38,10 @@ MonoBehaviour:
   LaneBaseY: -1.5
   LaneSpacing: 1.5
   SimulationTick: 0.02
-  TargetsStartX: 2
-  TargetsSpacing: 1.4
-  TargetOffsetX: -0.7
-  LaneStartX: -9
+  LaneStartX: -8.5
   LaneLength: 20
   BuildSlotSpacing: 1.1
   BuildingSlotsOffsetX: 0.5
+  TargetsSpacing: 1.4
+  FirstTargetOffsetFromBuilding: 2
+  TargetOffsetX: -0.7

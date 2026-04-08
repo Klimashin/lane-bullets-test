@@ -26,15 +26,15 @@ namespace _Project.Scripts.Gameplay.Simulation
             }
         }
 
-        public LaneSimulator(LaneSimulationConfig config)
+        public LaneSimulator(LaneSimulationConfig config, IReadOnlyList<LaneConfig> laneConfigs)
         {
             _laneStartX = config.LaneStartX;
             _laneMaxX = config.LaneStartX + config.LaneLength;
             _targetOffsetX = config.TargetOffsetX;
 
-            for (int i = 0; i < config.LanesCount; i++)
+            foreach (var laneConfig in laneConfigs)
             {
-                _laneStates.Add(CreateLane(config));
+                _laneStates.Add(CreateLane(config, laneConfig));
             }
         }
 
@@ -100,20 +100,24 @@ namespace _Project.Scripts.Gameplay.Simulation
             _laneStates[laneId].BuildSlots[slotId].RemoveBuilding();
         }
 
-        private static LaneState CreateLane(LaneSimulationConfig config)
+        private static LaneState CreateLane(LaneSimulationConfig config, LaneConfig laneConfig)
         {
             var lane = new LaneState();
 
-            for (int i = 0; i < config.BuildSlotCount; i++)
+            for (int i = 0; i < laneConfig.BuildSlotCount; i++)
             {
                 float posX = config.LaneStartX + config.BuildingSlotsOffsetX + i * config.BuildSlotSpacing;
                 lane.BuildSlots.Add(new BuildSlotState(i, posX));
             }
 
-            for (int i = 0; i < config.TargetHealthValues.Count; i++)
+            float lastSlotX = config.LaneStartX + config.BuildingSlotsOffsetX
+                + (laneConfig.BuildSlotCount - 1) * config.BuildSlotSpacing;
+            float firstTargetX = lastSlotX + config.FirstTargetOffsetFromBuilding;
+
+            for (int i = 0; i < laneConfig.TargetHealthValues.Count; i++)
             {
-                float posX = config.TargetsStartX + i * config.TargetsSpacing;
-                lane.Targets.Add(new TargetState(i, posX, config.TargetHealthValues[i]));
+                float posX = firstTargetX + i * config.TargetsSpacing;
+                lane.Targets.Add(new TargetState(i, posX, laneConfig.TargetHealthValues[i]));
             }
 
             return lane;

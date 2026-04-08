@@ -7,21 +7,19 @@ namespace _Project.Scripts.Gameplay.Data
     public sealed class GameplayConfig : ScriptableObject
     {
         [Header("Gameplay Settings")]
-        [Range(1, 4)] public int LanesCount = 1;
-        [Range(1, 9)] public int BuildSlotCount = 5;
-        public List<float> TargetHealthValues = new();
+        public List<LaneConfig> Lanes = new();
         public List<BuildingDefinition> Buildings = new();
 
-        [Header("Layout settings")]
+        [Header("Layout Settings")]
         public float LaneBaseY = 0f;
         public float LaneSpacing = 3f;
         public float SimulationTick = 0.02f;
-        public float TargetsStartX = 10f;
-        public float TargetsSpacing = 2f;
-        public float TargetOffsetX = 0f;
         public float LaneStartX = 2f;
         public float LaneLength = 20f;
         public float BuildSlotSpacing = 3f;
         public float BuildingSlotsOffsetX = 0.5f;
+        public float TargetsSpacing = 2f;
+        public float FirstTargetOffsetFromBuilding = 2f;
+        public float TargetOffsetX = 0f;
     }
 }

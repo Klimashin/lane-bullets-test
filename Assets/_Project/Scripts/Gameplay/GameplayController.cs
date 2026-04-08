@@ -28,22 +28,19 @@ namespace _Project.Scripts.Gameplay
         {
             var simulationConfig = new LaneSimulationConfig
             {
-                LanesCount = _config.LanesCount,
                 LaneStartX = _config.LaneStartX,
                 LaneLength = _config.LaneLength,
-                BuildSlotCount = _config.BuildSlotCount,
                 BuildSlotSpacing = _config.BuildSlotSpacing,
-                BuildingSlotsOffsetX = _config.BuildingSlotsOffsetX, 
-                TargetHealthValues = _config.TargetHealthValues,
-                TargetsStartX = _config.TargetsStartX,
+                BuildingSlotsOffsetX = _config.BuildingSlotsOffsetX,
                 TargetsSpacing = _config.TargetsSpacing,
+                FirstTargetOffsetFromBuilding = _config.FirstTargetOffsetFromBuilding,
                 TargetOffsetX = _config.TargetOffsetX
             };
 
             var laneBaseY = _config.LaneBaseY;
             var laneSpacing = _config.LaneSpacing;
 
-            _simulator = new LaneSimulator(simulationConfig);
+            _simulator = new LaneSimulator(simulationConfig, _config.Lanes);
 
             for (int i = 0; i < _simulator.LaneStates.Count; i++)
             {
