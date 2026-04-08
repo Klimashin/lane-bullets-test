@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using _Project.Scripts.Gameplay.Data;
 using _Project.Scripts.Gameplay.Simulation;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace _Project.Scripts.Gameplay.View
 {
@@ -17,7 +19,7 @@ namespace _Project.Scripts.Gameplay.View
 
         public int LaneId { get; private set; }
 
-        public event Action<int, int>? BuildingRemoveRequested; // laneId, slotId
+        public event Action<int, int>? BuildingRemoveRequested; // <laneId, slotId>
 
         private readonly Dictionary<int, ProjectileView> _projectileViews = new();
         private readonly Dictionary<int, TargetView> _targetViews = new();
@@ -26,8 +28,22 @@ namespace _Project.Scripts.Gameplay.View
         private readonly Dictionary<int, Vector3> _slotWorldPositions = new();
 
         private float _worldY;
+        private ObjectPool<ProjectileView>? _projectilePool;
+        private ObjectPool<ProjectileView> ProjectilePool
+        {
+            get
+            {
+                _projectilePool ??= new ObjectPool<ProjectileView>(
+                    createFunc: () => Instantiate(_projectilePrefab, _projectileRoot),
+                    actionOnGet: v => v.gameObject.SetActive(true),
+                    actionOnRelease: v => v.gameObject.SetActive(false),
+                    actionOnDestroy: v => Destroy(v.gameObject));
 
-        private const float RemoveDistanceThreshold = 0.5f;
+                return _projectilePool;
+            }
+        }
+
+        private const float REMOVE_DISTANCE_THRESHOLD = 0.5f;
 
         public void Initialize(LaneState lane, int laneId, float worldY)
         {
@@ -76,7 +92,7 @@ namespace _Project.Scripts.Gameplay.View
             {
                 if (_buildingViews.TryGetValue(fire.GunId, out var buildingView))
                 {
-                    buildingView.PlayFireFeedback();
+                    buildingView.PlayFeedback();
                 }
             }
 
@@ -84,7 +100,7 @@ namespace _Project.Scripts.Gameplay.View
             {
                 if (_projectileViews.TryGetValue(trigger.ProjectileId, out var projectileView))
                 {
-                    projectileView.PlayHitFeedback();
+                    projectileView.PlayFeedback();
                 }
             }
         }
@@ -124,7 +140,7 @@ namespace _Project.Scripts.Gameplay.View
 
                 if (!_projectileViews.TryGetValue(projectile.Id, out var view))
                 {
-                    view = Instantiate(_projectilePrefab, _projectileRoot);
+                    view = ProjectilePool.Get();
                     view.Initialize(projectile.Id);
                     _projectileViews.Add(projectile.Id, view);
                 }
@@ -138,7 +154,7 @@ namespace _Project.Scripts.Gameplay.View
             {
                 if (!aliveIds.Contains(pair.Key))
                 {
-                    Destroy(pair.Value.gameObject);
+                    ProjectilePool.Release(pair.Value);
                     idsToRemove.Add(pair.Key);
                 }
             }
@@ -196,7 +212,7 @@ namespace _Project.Scripts.Gameplay.View
         {
             var slotWorldPosition = _slotWorldPositions[slotView.SlotId];
 
-            if (Vector3.Distance(worldPosition, slotWorldPosition) > RemoveDistanceThreshold)
+            if (Vector3.Distance(worldPosition, slotWorldPosition) > REMOVE_DISTANCE_THRESHOLD)
             {
                 SetSlotOccupied(slotView.SlotId, false);
                 RemoveBuildingView(slotView.SlotId);
@@ -214,6 +230,11 @@ namespace _Project.Scripts.Gameplay.View
         private Vector3 LaneToWorld(float laneX)
         {
             return new Vector3(laneX, _worldY, 0f);
+        }
+        
+        private void OnDestroy()
+        {
+            _projectilePool?.Dispose();
         }
     }
 }

@@ -2,7 +2,7 @@ using _Project.Scripts.Gameplay.Simulation;
 using _Project.Scripts.Gameplay.View;
 using UnityEngine;
 
-namespace _Project.Scripts.Gameplay
+namespace _Project.Scripts.Gameplay.Data
 {
     public abstract class BuildingDefinition : ScriptableObject
     {

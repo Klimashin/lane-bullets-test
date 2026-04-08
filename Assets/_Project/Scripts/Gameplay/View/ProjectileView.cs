@@ -6,10 +6,11 @@ namespace _Project.Scripts.Gameplay.View
 {
     public sealed class ProjectileView : MonoBehaviour
     {
-        [SerializeField] private SpriteRenderer _renderer = null!;
         [SerializeField] private TMP_Text _damageText = null!;
 
         public int ProjectileId { get; private set; }
+        
+        private Tween? _feedbackTween;
 
         public void Initialize(int projectileId)
         {
@@ -26,9 +27,17 @@ namespace _Project.Scripts.Gameplay.View
             _damageText.SetText("{0:1}", damage);
         }
 
-        public void PlayHitFeedback()
+        public void PlayFeedback()
         {
-            transform.DOPunchScale(Vector3.one * 0.4f, 0.2f, vibrato: 1, elasticity: 0f);
+            _feedbackTween = transform.DOPunchScale(Vector3.one * 0.4f, 0.2f, vibrato: 1, elasticity: 0f);
+        }
+
+        private void OnDestroy()
+        {
+            if (_feedbackTween != null && _feedbackTween.IsActive())
+            {
+                _feedbackTween.Kill();
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using _Project.Scripts.Gameplay.Data;
 using _Project.Scripts.Gameplay.Simulation;
 using TMPro;
 using UnityEngine;
@@ -6,7 +7,6 @@ namespace _Project.Scripts.Gameplay.View
 {
     public sealed class BuildingView : MonoBehaviour
     {
-        [SerializeField] private SpriteRenderer _renderer = null!;
         [SerializeField] private TMP_Text _statsText = null!;
 
         public int BuildingId { get; private set; }
@@ -22,7 +22,7 @@ namespace _Project.Scripts.Gameplay.View
             transform.position = worldPosition;
         }
 
-        public void PlayFireFeedback()
+        public void PlayFeedback()
         {
             // implement punch scale
         }

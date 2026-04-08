@@ -6,7 +6,6 @@ namespace _Project.Scripts.Gameplay.View
 {
     public sealed class TargetView : MonoBehaviour
     {
-        [SerializeField] private SpriteRenderer _renderer = null!;
         [SerializeField] private TMP_Text _hpLabel = null!;
 
         public int TargetId { get; private set; }
@@ -35,6 +34,7 @@ namespace _Project.Scripts.Gameplay.View
                 _hitTween.Kill();
             }
 
+            transform.localScale = Vector3.one;
             _hitTween = transform.DOPunchScale(Vector3.one * 0.4f, 0.2f, vibrato: 1, elasticity: 0f);
         }
 

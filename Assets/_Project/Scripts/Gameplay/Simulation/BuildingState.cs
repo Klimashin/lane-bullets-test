@@ -1,4 +1,5 @@
 using _Project.Scripts.Gameplay;
+using _Project.Scripts.Gameplay.Data;
 
 namespace _Project.Scripts.Gameplay.Simulation
 {

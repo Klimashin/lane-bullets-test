@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dffce561de456f4687cbdc1a2571e45, type: 3}
+  m_Name: GameplayConfig
+  m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.Data.GameplayConfig
+  LanesCount: 3
+  BuildSlotCount: 6
+  TargetHealthValues:
+  - 2
+  - 10
+  - 100
+  - 4000
+  Buildings:
+  - {fileID: 11400000, guid: c315022a6f30af345a69dd7a1dfb7f44, type: 2}
+  - {fileID: 11400000, guid: b12393d42fe5ab8478f9cf33d0c04b1d, type: 2}
+  - {fileID: 11400000, guid: 3726c5434f2abd445ae84e6da166a5c0, type: 2}
+  - {fileID: 11400000, guid: 8728bfb820795b243a547c371c7a9a9c, type: 2}
+  LaneBaseY: -1.5
+  LaneSpacing: 1.5
+  SimulationTick: 0.02
+  TargetsStartX: 2
+  TargetsSpacing: 1.4
+  LaneStartX: -9
+  LaneLength: 20
+  BuildSlotSpacing: 1.1
+  BuildingSlotsOffsetX: 0.5

@@ -1,7 +1,7 @@
 using _Project.Scripts.Gameplay.Simulation;
 using UnityEngine;
 
-namespace _Project.Scripts.Gameplay
+namespace _Project.Scripts.Gameplay.Data
 {
     [CreateAssetMenu(fileName = "PierceBoostDefinition", menuName = "Gameplay/Pierce Boost Definition")]
     public sealed class PierceBoostBuildingDefinition : BuildingDefinition
@@ -14,6 +14,6 @@ namespace _Project.Scripts.Gameplay
             return new BuildingState(id, positionX, this);
         }
 
-        public override string GetStatsText() => $"+{HitsBonus} PIERCE";
+        public override string GetStatsText() => $"PIERCE +{HitsBonus}";
     }
 }

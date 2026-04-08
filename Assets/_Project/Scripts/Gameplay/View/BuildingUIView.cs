@@ -1,4 +1,5 @@
 using System;
+using _Project.Scripts.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;

@@ -1,7 +1,7 @@
 using _Project.Scripts.Gameplay.Simulation;
 using UnityEngine;
 
-namespace _Project.Scripts.Gameplay
+namespace _Project.Scripts.Gameplay.Data
 {
     [CreateAssetMenu(fileName = "CopyDefinition", menuName = "Gameplay/Copy Definition")]
     public sealed class CopyBuildingDefinition : BuildingDefinition

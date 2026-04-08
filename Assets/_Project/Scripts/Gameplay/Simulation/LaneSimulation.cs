@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using _Project.Scripts.Gameplay.Data;
 
 namespace _Project.Scripts.Gameplay.Simulation
 {
@@ -9,14 +10,103 @@ namespace _Project.Scripts.Gameplay.Simulation
         private int _nextProjectileId = 1;
         private readonly float _laneStartX;
         private readonly float _laneMaxX;
+        private readonly List<LaneState> _laneStates = new();
 
-        public LaneSimulator(float laneStartX, float laneMaxX)
+        public IReadOnlyList<LaneState> LaneStates => _laneStates;
+
+        public LaneSimulator(LaneSimulationConfig config)
         {
-            _laneStartX = laneStartX;
-            _laneMaxX = laneMaxX;
+            _laneStartX = config.LaneStartX;
+            _laneMaxX = config.LaneStartX + config.LaneLength;
+
+            for (int i = 0; i < config.LanesCount; i++)
+            {
+                _laneStates.Add(CreateLane(config));
+            }
         }
 
-        public SimulationStepResult Step(LaneState lane, float deltaTime)
+        public IReadOnlyList<SimulationStepResult> StepAll(float deltaTime)
+        {
+            var results = new SimulationStepResult[_laneStates.Count];
+
+            for (int i = 0; i < _laneStates.Count; i++)
+            {
+                results[i] = Step(_laneStates[i], deltaTime);
+            }
+
+            return results;
+        }
+
+        public void TriggerAllGuns()
+        {
+            foreach (var lane in _laneStates)
+            {
+                foreach (var slot in lane.BuildSlots)
+                {
+                    if (slot.Building is GunBuildingState gun)
+                    {
+                        gun.PendingFire = true;
+                    }
+                }
+            }
+        }
+
+        public BuildingState? TryPlaceBuilding(int laneId, int slotId, BuildingDefinition definition)
+        {
+            if (laneId < 0 || laneId >= _laneStates.Count)
+            {
+                return null;
+            }
+
+            var lane = _laneStates[laneId];
+
+            if (slotId < 0 || slotId >= lane.BuildSlots.Count)
+            {
+                return null;
+            }
+
+            var slot = lane.BuildSlots[slotId];
+
+            if (slot.IsOccupied)
+            {
+                return null;
+            }
+
+            var building = definition.CreateState(slotId, slot.PositionX);
+            slot.PlaceBuilding(building);
+            return building;
+        }
+
+        public void RemoveBuilding(int laneId, int slotId)
+        {
+            if (laneId < 0 || laneId >= _laneStates.Count)
+            {
+                return;
+            }
+
+            _laneStates[laneId].BuildSlots[slotId].RemoveBuilding();
+        }
+
+        private static LaneState CreateLane(LaneSimulationConfig config)
+        {
+            var lane = new LaneState();
+
+            for (int i = 0; i < config.BuildSlotCount; i++)
+            {
+                float posX = config.LaneStartX + config.BuildingSlotsOffsetX + i * config.BuildSlotSpacing;
+                lane.BuildSlots.Add(new BuildSlotState(i, posX));
+            }
+
+            for (int i = 0; i < config.TargetHealthValues.Count; i++)
+            {
+                float posX = config.TargetsStartX + i * config.TargetsSpacing;
+                lane.Targets.Add(new TargetState(i, posX, config.TargetHealthValues[i]));
+            }
+
+            return lane;
+        }
+
+        private SimulationStepResult Step(LaneState lane, float deltaTime)
         {
             var result = new SimulationStepResult();
             var pendingProjectiles = new List<ProjectileState>();
@@ -71,7 +161,7 @@ namespace _Project.Scripts.Gameplay.Simulation
                     case LaneEventType.Target:
                         ProcessTarget(projectile, laneEvent.Target, result);
                         break;
-                    
+
                     default:
                         throw new Exception("Unimplemented LaneEventType");
                 }
@@ -125,7 +215,7 @@ namespace _Project.Scripts.Gameplay.Simulation
                 {
                     return xCompare;
                 }
-                
+
                 return ((int)a.Type).CompareTo((int)b.Type);
             });
         }
@@ -162,7 +252,7 @@ namespace _Project.Scripts.Gameplay.Simulation
                     result.SpawnedProjectiles.Add(new ProjectileSpawnInfo(copy.Id, copy.PositionX));
                     break;
             }
-            
+
             result.TriggeredBuildings.Add(new BuildingTriggerInfo(projectile.Id, building.Id));
         }
 
@@ -197,7 +287,7 @@ namespace _Project.Scripts.Gameplay.Simulation
                 remainingHits: source.RemainingHits,
                 canBeCopied: false);
         }
-        
+
         private void SimulateGuns(
             LaneState lane,
             float deltaTime,

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using _Project.Scripts.Gameplay.Data;
 using _Project.Scripts.Gameplay.Simulation;
 using _Project.Scripts.Gameplay.View;
+using Reflex.Attributes;
 using UnityEngine;
 
 namespace _Project.Scripts.Gameplay
@@ -9,41 +11,44 @@ namespace _Project.Scripts.Gameplay
     {
         [SerializeField] private LaneView _laneViewPrefab = null!;
 
-        [SerializeField] private int _lanesCount = 1;
-        [SerializeField] private float _laneBaseY = 0f;
-        [SerializeField] private float _laneSpacing = 3f;
+        public int SimulationSpeed { get; private set; } = 1;
 
-        [SerializeField] private int _buildSlotCount = 5;
-        [SerializeField] private float _laneStartX = 2f;
-        [SerializeField] private float _buildSlotSpacing = 3f;
-        [SerializeField] private float _laneBuildingSlotsOffsetX = 0.5f;
-
-        [SerializeField] private List<float> _targetHealthValues = new();
-        [SerializeField] private float _targetsStartX = 10f;
-        [SerializeField] private float _targetsSpacing = 2f;
-
-        [SerializeField] private float _simulationTick = 0.02f;
-        [SerializeField] private float _laneLength = 20f;
-
-        private readonly List<LaneState> _laneStates = new();
-        private readonly List<LaneView> _laneViews = new();
         private LaneSimulator? _simulator;
-
+        private readonly List<LaneView> _laneViews = new();
         private float _tickAccumulator;
-        private int _simulationSpeed = 1;
+        private GameplayConfig _config = null!;
+
+        [Inject]
+        public void Inject(GameplayConfig config)
+        {
+            _config = config;
+        }
 
         private void Start()
         {
-            _simulator = new LaneSimulator(_laneStartX, _laneStartX + _laneLength);
-
-            for (int i = 0; i < _lanesCount; i++)
+            var simulationConfig = new LaneSimulationConfig
             {
-                float worldY = _laneBaseY + i * _laneSpacing;
-                var laneState = CreateLane();
-                _laneStates.Add(laneState);
+                LanesCount = _config.LanesCount,
+                LaneStartX = _config.LaneStartX,
+                LaneLength = _config.LaneLength,
+                BuildSlotCount = _config.BuildSlotCount,
+                BuildSlotSpacing = _config.BuildSlotSpacing,
+                BuildingSlotsOffsetX = _config.BuildingSlotsOffsetX, 
+                TargetHealthValues = _config.TargetHealthValues,
+                TargetsStartX = _config.TargetsStartX,
+                TargetsSpacing = _config.TargetsSpacing
+            };
 
+            var laneBaseY = _config.LaneBaseY;
+            var laneSpacing = _config.LaneSpacing;
+
+            _simulator = new LaneSimulator(simulationConfig);
+
+            for (int i = 0; i < _simulator.LaneStates.Count; i++)
+            {
+                float worldY = laneBaseY + i * laneSpacing;
                 var laneView = Instantiate(_laneViewPrefab, transform);
-                laneView.Initialize(laneState, i, worldY);
+                laneView.Initialize(_simulator.LaneStates[i], i, worldY);
                 laneView.BuildingRemoveRequested += OnBuildingRemoveRequested;
                 _laneViews.Add(laneView);
             }
@@ -56,67 +61,50 @@ namespace _Project.Scripts.Gameplay
                 return;
             }
 
-            _tickAccumulator += Time.deltaTime * _simulationSpeed;
+            _tickAccumulator += Time.deltaTime * SimulationSpeed;
 
-            while (_tickAccumulator >= _simulationTick)
+            while (_tickAccumulator >= _config.SimulationTick)
             {
-                _tickAccumulator -= _simulationTick;
+                _tickAccumulator -= _config.SimulationTick;
 
-                for (int i = 0; i < _laneStates.Count; i++)
+                var results = _simulator.StepAll(_config.SimulationTick);
+
+                for (int i = 0; i < results.Count; i++)
                 {
-                    var stepResult = _simulator.Step(_laneStates[i], _simulationTick);
-                    _laneViews[i].ApplyStepVisuals(stepResult);
+                    _laneViews[i].ApplyStepVisuals(results[i]);
                 }
             }
 
-            for (int i = 0; i < _laneStates.Count; i++)
+            for (int i = 0; i < _laneViews.Count; i++)
             {
-                _laneViews[i].SyncViews(_laneStates[i]);
+                _laneViews[i].SyncViews(_simulator.LaneStates[i]);
             }
         }
 
         public void SetSimulationSpeed(int speed)
         {
-            _simulationSpeed = Mathf.Max(0, speed);
+            SimulationSpeed = Mathf.Clamp(speed, 0, 10);
         }
 
         public void TriggerAllGuns()
         {
-            foreach (var laneState in _laneStates)
-            {
-                foreach (var slot in laneState.BuildSlots)
-                {
-                    if (slot.Building is GunBuildingState gun)
-                    {
-                        gun.PendingFire = true;
-                    }
-                }
-            }
+            _simulator?.TriggerAllGuns();
         }
 
         public bool TryPlaceBuilding(int laneId, int slotId, BuildingDefinition definition)
         {
-            if (laneId < 0 || laneId >= _laneStates.Count)
+            if (_simulator == null)
             {
                 return false;
             }
 
-            var laneState = _laneStates[laneId];
+            var building = _simulator.TryPlaceBuilding(laneId, slotId, definition);
 
-            if (slotId < 0 || slotId >= laneState.BuildSlots.Count)
+            if (building == null)
             {
                 return false;
             }
 
-            var slot = laneState.BuildSlots[slotId];
-
-            if (slot.IsOccupied)
-            {
-                return false;
-            }
-
-            var building = definition.CreateState(slotId, slot.PositionX);
-            slot.PlaceBuilding(building);
             _laneViews[laneId].SpawnBuildingView(building, definition);
             _laneViews[laneId].SetSlotOccupied(slotId, true);
 
@@ -125,32 +113,7 @@ namespace _Project.Scripts.Gameplay
 
         private void OnBuildingRemoveRequested(int laneId, int slotId)
         {
-            if (laneId < 0 || laneId >= _laneStates.Count)
-            {
-                return;
-            }
-
-            _laneStates[laneId].BuildSlots[slotId].RemoveBuilding();
-        }
-
-        private LaneState CreateLane()
-        {
-            var lane = new LaneState();
-
-            for (int i = 0; i < _buildSlotCount; i++)
-            {
-                float posX = _laneStartX + _laneBuildingSlotsOffsetX + i * _buildSlotSpacing;
-                lane.BuildSlots.Add(new BuildSlotState(i, posX));
-            }
-
-            for (int i = 0; i < _targetHealthValues.Count; i++)
-            {
-                float posX = _targetsStartX + i * _targetsSpacing;
-                lane.Targets.Add(new TargetState(i, posX, _targetHealthValues[i]));
-            }
-
-            return lane;
+            _simulator?.RemoveBuilding(laneId, slotId);
         }
     }
-
 }

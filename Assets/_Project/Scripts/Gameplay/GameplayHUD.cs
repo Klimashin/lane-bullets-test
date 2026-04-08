@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using _Project.Scripts.Gameplay.Data;
 using _Project.Scripts.Gameplay.View;
+using Reflex.Attributes;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,23 +11,38 @@ namespace _Project.Scripts.Gameplay
     public sealed class GameplayHUD : MonoBehaviour
     {
         [SerializeField] private Canvas _canvas = null!;
-        [SerializeField] private Camera _camera = null!;
-        [SerializeField] private GameplayController _gameplayController = null!;
         [SerializeField] private Button _fireButton = null!;
         [SerializeField] private Slider _speedSlider = null!;
+        [SerializeField] private TextMeshProUGUI _speedText = null!;
         [SerializeField] private Transform _buildingListParent = null!;
-        [SerializeField] private List<BuildingDefinition> _availableBuildings = new();
 
         private readonly Dictionary<BuildingUIView, BuildingDefinition> _buildingByView = new();
 
         private GameObject? _dragCopy;
 
+        private Camera _camera = null!;
+        private GameplayController _gameplayController = null!;
+        private GameplayConfig _gameplayConfig = null!;
+        
+        [Inject]
+        private void Inject(Camera cam, GameplayController gameplayController, GameplayConfig gameplayConfig)
+        {
+            _camera = cam;
+            _gameplayController = gameplayController;
+            _gameplayConfig = gameplayConfig;
+        }
+
         private void Start()
         {
+            UpdateSpeedText();
             _fireButton.onClick.AddListener(_gameplayController.TriggerAllGuns);
-            _speedSlider.onValueChanged.AddListener(v => _gameplayController.SetSimulationSpeed((int)v));
+            _speedSlider.onValueChanged.AddListener(v =>
+            {
+                _gameplayController.SetSimulationSpeed((int)v);
+                UpdateSpeedText();
+            });
 
-            foreach (var definition in _availableBuildings)
+            foreach (var definition in _gameplayConfig.Buildings)
             {
                 if (definition == null || definition.UIPrefab == null)
                 {
@@ -46,6 +64,11 @@ namespace _Project.Scripts.Gameplay
                 uiView.Dragged += OnDragged;
                 uiView.DragEnded += OnDragEnded;
             }
+        }
+
+        private void UpdateSpeedText()
+        {
+            _speedText.SetText("Speed: {0}", _gameplayController.SimulationSpeed);
         }
 
         private void OnDragStarted(BuildingUIView source)
