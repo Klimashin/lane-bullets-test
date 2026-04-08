@@ -43,7 +43,7 @@ Assets/_Project/ScriptableObjects/Buildings/
 |---|---|
 | `Projectile Damage` | Базовый урон снаряда |
 | `Projectile Speed` | Скорость снаряда |
-| `Projectile Hits` | Количество целей, которые может поразить снаряд |
+| `Projectile Hits` | Количество целей, которые может поразить снаряд (0 не имеет смысла, 2 - дефолтный Pierce 1, и т.д. ) |
 | `Fire Interval` | Интервал между выстрелами в режиме Auto |
 | `Initial Cooldown` | Начальный кулдаун при старте или смене режима |
 | `Spawn Offset X` | Смещение точки спавна снаряда относительно здания |
