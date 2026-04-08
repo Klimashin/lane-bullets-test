@@ -37,6 +37,12 @@ namespace _Project.Scripts.Gameplay.View
 
         public void PlayFeedback()
         {
+            if (_feedbackTween != null && _feedbackTween.IsActive())
+            {
+                _feedbackTween.Kill();
+            }
+
+            transform.localScale = Vector3.one;
             _feedbackTween = transform.DOPunchScale(Vector3.one * 0.4f, 0.2f, vibrato: 1, elasticity: 0f);
         }
 
