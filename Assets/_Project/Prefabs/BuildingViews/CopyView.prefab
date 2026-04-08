@@ -47,6 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.View.BuildingView
   _renderer: {fileID: 2660182224922376020}
+  _statsText: {fileID: 4969600727155387998}
 --- !u!1 &3353747735379309806
 GameObject:
   m_ObjectHideFlags: 0
@@ -58,7 +59,7 @@ GameObject:
   - component: {fileID: 6517316941406264691}
   - component: {fileID: 2660182224922376020}
   m_Layer: 0
-  m_Name: sprite
+  m_Name: Renderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -150,7 +151,7 @@ GameObject:
   - component: {fileID: 7744439997088959536}
   - component: {fileID: 4969600727155387998}
   m_Layer: 0
-  m_Name: Text (TMP)
+  m_Name: StatsText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -253,8 +254,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4280690214
+  m_fontColor: {r: 0.1509434, g: 0.1509434, b: 0.1509434, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

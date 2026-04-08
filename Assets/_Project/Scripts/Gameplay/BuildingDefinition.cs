@@ -10,5 +10,6 @@ namespace _Project.Scripts.Gameplay
         public GameObject UIPrefab = null!;
         public abstract BuildingType Type { get; }
         public abstract BuildingState CreateState(int id, float positionX);
+        public virtual string GetStatsText() => string.Empty;
     }
 }

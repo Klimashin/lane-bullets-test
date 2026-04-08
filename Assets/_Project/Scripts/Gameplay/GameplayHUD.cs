@@ -11,16 +11,18 @@ namespace _Project.Scripts.Gameplay
         [SerializeField] private Camera _camera = null!;
         [SerializeField] private GameplayController _gameplayController = null!;
         [SerializeField] private Button _fireButton = null!;
+        [SerializeField] private Slider _speedSlider = null!;
         [SerializeField] private Transform _buildingListParent = null!;
         [SerializeField] private List<BuildingDefinition> _availableBuildings = new();
 
-        private readonly Dictionary<DraggableBuildingUI, BuildingDefinition> _buildingByDraggable = new();
+        private readonly Dictionary<BuildingUIView, BuildingDefinition> _buildingByView = new();
 
         private GameObject? _dragCopy;
 
         private void Start()
         {
             _fireButton.onClick.AddListener(_gameplayController.TriggerAllGuns);
+            _speedSlider.onValueChanged.AddListener(v => _gameplayController.SetSimulationSpeed((int)v));
 
             foreach (var definition in _availableBuildings)
             {
@@ -30,28 +32,29 @@ namespace _Project.Scripts.Gameplay
                 }
 
                 var instance = Instantiate(definition.UIPrefab, _buildingListParent);
-                var draggable = instance.GetComponent<DraggableBuildingUI>();
+                var uiView = instance.GetComponent<BuildingUIView>();
 
-                if (draggable == null)
+                if (uiView == null)
                 {
                     continue;
                 }
 
-                _buildingByDraggable[draggable] = definition;
+                uiView.Initialize(definition);
+                _buildingByView[uiView] = definition;
 
-                draggable.DragStarted += OnDragStarted;
-                draggable.Dragged += OnDragged;
-                draggable.DragEnded += OnDragEnded;
+                uiView.DragStarted += OnDragStarted;
+                uiView.Dragged += OnDragged;
+                uiView.DragEnded += OnDragEnded;
             }
         }
 
-        private void OnDragStarted(DraggableBuildingUI source)
+        private void OnDragStarted(BuildingUIView source)
         {
             _dragCopy = Instantiate(source.gameObject, _canvas.transform);
-            _dragCopy.GetComponent<DraggableBuildingUI>().enabled = false;
+            _dragCopy.GetComponent<BuildingUIView>().enabled = false;
         }
 
-        private void OnDragged(DraggableBuildingUI source, Vector2 screenPosition)
+        private void OnDragged(BuildingUIView source, Vector2 screenPosition)
         {
             if (_dragCopy == null)
             {
@@ -67,7 +70,7 @@ namespace _Project.Scripts.Gameplay
             _dragCopy.GetComponent<RectTransform>().localPosition = localPoint;
         }
 
-        private void OnDragEnded(DraggableBuildingUI source, Vector2 screenPosition)
+        private void OnDragEnded(BuildingUIView source, Vector2 screenPosition)
         {
             if (_dragCopy != null)
             {
@@ -80,9 +83,9 @@ namespace _Project.Scripts.Gameplay
 
             if (hit.collider != null && hit.collider.TryGetComponent<BuildSlotView>(out var slotView))
             {
-                if (_buildingByDraggable.TryGetValue(source, out var definition))
+                if (_buildingByView.TryGetValue(source, out var definition))
                 {
-                    _gameplayController.TryPlaceBuilding(slotView.SlotId, definition);
+                    _gameplayController.TryPlaceBuilding(slotView.LaneId, slotView.SlotId, definition);
                 }
             }
         }

@@ -1,3 +1,4 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace _Project.Scripts.Gameplay.View
         [SerializeField] private TMP_Text _hpLabel = null!;
 
         public int TargetId { get; private set; }
+
+        private Tween? _hitTween;
 
         public void Initialize(int targetId)
         {
@@ -25,9 +28,22 @@ namespace _Project.Scripts.Gameplay.View
             _hpLabel.text = Mathf.Max(0f, currentHealth).ToString("0.##");
         }
 
-        public void SetAlive(bool isAlive)
+        public void PlayHitFeedback()
         {
-            gameObject.SetActive(isAlive);
+            if (_hitTween != null && _hitTween.IsActive())
+            {
+                _hitTween.Kill();
+            }
+
+            _hitTween = transform.DOPunchScale(Vector3.one * 0.4f, 0.2f, vibrato: 1, elasticity: 0f);
+        }
+
+        private void OnDestroy()
+        {
+            if (_hitTween != null && _hitTween.IsActive())
+            {
+                _hitTween.Kill();
+            }
         }
     }
 }

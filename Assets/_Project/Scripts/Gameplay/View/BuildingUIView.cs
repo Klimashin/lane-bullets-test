@@ -1,14 +1,22 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace _Project.Scripts.Gameplay.View
 {
-    public sealed class DraggableBuildingUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public sealed class BuildingUIView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        public event Action<DraggableBuildingUI>? DragStarted;
-        public event Action<DraggableBuildingUI, Vector2>? Dragged;
-        public event Action<DraggableBuildingUI, Vector2>? DragEnded;
+        [SerializeField] private TMP_Text _statsText = null!;
+
+        public event Action<BuildingUIView>? DragStarted;
+        public event Action<BuildingUIView, Vector2>? Dragged;
+        public event Action<BuildingUIView, Vector2>? DragEnded;
+
+        public void Initialize(BuildingDefinition definition)
+        {
+            _statsText.text = definition.GetStatsText();
+        }
 
         public void OnBeginDrag(PointerEventData eventData)
         {

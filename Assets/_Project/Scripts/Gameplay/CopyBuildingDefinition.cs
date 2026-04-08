@@ -13,5 +13,7 @@ namespace _Project.Scripts.Gameplay
         {
             return new BuildingState(id, positionX, this);
         }
+
+        public override string GetStatsText() => $"Copy {CopyDamageFraction * 100f:0}%";
     }
 }

@@ -7,15 +7,17 @@ namespace _Project.Scripts.Gameplay.View
     public sealed class BuildSlotView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         public int SlotId { get; private set; }
+        public int LaneId { get; private set; }
         public bool IsOccupied { get; private set; }
 
         public event Action<BuildSlotView>? DragStarted;
         public event Action<BuildSlotView, Vector3>? Dragged;
         public event Action<BuildSlotView, Vector3>? DragEnded;
 
-        public void Initialize(int slotId)
+        public void Initialize(int slotId, int laneId)
         {
             SlotId = slotId;
+            LaneId = laneId;
         }
 
         public void SetOccupied(bool occupied)

@@ -18,5 +18,5 @@ MonoBehaviour:
   ProjectileDamage: 1
   ProjectileHits: 1
   FireInterval: 1
-  CanProjectileBeCopied: 0
   InitialCooldown: 1
+  SpawnOffsetX: 0.5

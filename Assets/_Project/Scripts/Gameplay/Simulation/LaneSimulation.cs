@@ -7,8 +7,8 @@ namespace _Project.Scripts.Gameplay.Simulation
     public sealed class LaneSimulator
     {
         private int _nextProjectileId = 1;
-        private float _laneStartX;
-        private float _laneMaxX;
+        private readonly float _laneStartX;
+        private readonly float _laneMaxX;
 
         public LaneSimulator(float laneStartX, float laneMaxX)
         {
@@ -141,8 +141,6 @@ namespace _Project.Scripts.Gameplay.Simulation
                 return;
             }
 
-            result.TriggeredBuildings.Add(new BuildingTriggerInfo(projectile.Id, building.Id));
-
             switch (building.Definition)
             {
                 case DamageBoostBuildingDefinition damageBoost:
@@ -164,6 +162,8 @@ namespace _Project.Scripts.Gameplay.Simulation
                     result.SpawnedProjectiles.Add(new ProjectileSpawnInfo(copy.Id, copy.PositionX));
                     break;
             }
+            
+            result.TriggeredBuildings.Add(new BuildingTriggerInfo(projectile.Id, building.Id));
         }
 
         private void ProcessTarget(
@@ -189,8 +189,6 @@ namespace _Project.Scripts.Gameplay.Simulation
 
         private ProjectileState CreateCopy(ProjectileState source, float spawnX, float damageFraction)
         {
-            source.CanBeCopied = false;
-
             return new ProjectileState(
                 id: _nextProjectileId++,
                 positionX: spawnX,
@@ -239,7 +237,7 @@ namespace _Project.Scripts.Gameplay.Simulation
         {
             return new ProjectileState(
                 id: _nextProjectileId++,
-                positionX: gun.PositionX,
+                positionX: gun.PositionX + gun.Definition.SpawnOffsetX,
                 speed: gun.Definition.ProjectileSpeed,
                 damage: gun.Definition.ProjectileDamage,
                 remainingHits: gun.Definition.ProjectileHits,
