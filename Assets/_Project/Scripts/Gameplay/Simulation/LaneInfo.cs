@@ -8,6 +8,14 @@ namespace _Project.Scripts.Gameplay.Simulation
         public List<TargetHitInfo> TargetHits { get; } = new();
         public List<BuildingTriggerInfo> TriggeredBuildings { get; } = new();
         public List<GunFireInfo> GunFires { get; } = new();
+
+        public void Clear()
+        {
+            SpawnedProjectiles.Clear();
+            TargetHits.Clear();
+            TriggeredBuildings.Clear();
+            GunFires.Clear();
+        }
     }
 
     public readonly struct ProjectileSpawnInfo
@@ -50,12 +58,12 @@ namespace _Project.Scripts.Gameplay.Simulation
     
     public readonly struct GunFireInfo
     {
-        public int GunId { get; }
+        public int SlotId { get; }
         public int ProjectileId { get; }
 
-        public GunFireInfo(int gunId, int projectileId)
+        public GunFireInfo(int slotId, int projectileId)
         {
-            GunId = gunId;
+            SlotId = slotId;
             ProjectileId = projectileId;
         }
     }

@@ -113,7 +113,7 @@ namespace _Project.Scripts.Gameplay
                 return false;
             }
 
-            _laneViews[laneId].SpawnBuildingView(building, definition);
+            _laneViews[laneId].SpawnBuildingView(slotId, building, definition);
             _laneViews[laneId].SetSlotOccupied(slotId, true);
 
             return true;

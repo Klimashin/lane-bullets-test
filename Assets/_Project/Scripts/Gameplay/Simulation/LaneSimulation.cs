@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using _Project.Scripts.Gameplay.Data;
 
 namespace _Project.Scripts.Gameplay.Simulation
@@ -12,6 +11,9 @@ namespace _Project.Scripts.Gameplay.Simulation
         private readonly float _laneMaxX;
         private readonly float _targetOffsetX;
         private readonly List<LaneState> _laneStates = new();
+        private SimulationStepResult[] _stepResults = Array.Empty<SimulationStepResult>();
+        private readonly List<ProjectileState> _pendingProjectilesBuffer = new();
+        private readonly List<LaneEvent> _eventsBuffer = new();
 
         public IReadOnlyList<LaneState> LaneStates => _laneStates;
 
@@ -36,18 +38,23 @@ namespace _Project.Scripts.Gameplay.Simulation
             {
                 _laneStates.Add(CreateLane(config, laneConfig));
             }
+
+            _stepResults = new SimulationStepResult[_laneStates.Count];
+            for (int i = 0; i < _stepResults.Length; i++)
+            {
+                _stepResults[i] = new SimulationStepResult();
+            }
         }
 
         public IReadOnlyList<SimulationStepResult> StepAll(float deltaTime)
         {
-            var results = new SimulationStepResult[_laneStates.Count];
-
             for (int i = 0; i < _laneStates.Count; i++)
             {
-                results[i] = Step(_laneStates[i], deltaTime);
+                _stepResults[i].Clear();
+                Step(_laneStates[i], deltaTime, _stepResults[i]);
             }
 
-            return results;
+            return _stepResults;
         }
 
         public void TriggerAllGuns()
@@ -123,30 +130,27 @@ namespace _Project.Scripts.Gameplay.Simulation
             return lane;
         }
 
-        private SimulationStepResult Step(LaneState lane, float deltaTime)
+        private void Step(LaneState lane, float deltaTime, SimulationStepResult result)
         {
-            var result = new SimulationStepResult();
-            var pendingProjectiles = new List<ProjectileState>();
+            _pendingProjectilesBuffer.Clear();
 
-            SimulateGuns(lane, deltaTime, pendingProjectiles, result);
+            SimulateGuns(lane, deltaTime, _pendingProjectilesBuffer, result);
 
-            var activeProjectiles = lane.Projectiles.ToList();
-
-            foreach (var projectile in activeProjectiles)
+            int projectileCount = lane.Projectiles.Count;
+            for (int i = 0; i < projectileCount; i++)
             {
+                var projectile = lane.Projectiles[i];
                 if (projectile.IsDestroyed)
                 {
                     continue;
                 }
 
-                SimulateProjectile(projectile, lane, deltaTime, pendingProjectiles, result);
+                SimulateProjectile(projectile, lane, deltaTime, _pendingProjectilesBuffer, result);
             }
 
-            lane.Projectiles.AddRange(pendingProjectiles);
+            lane.Projectiles.AddRange(_pendingProjectilesBuffer);
             lane.RemoveDestroyedEntities();
             lane.CleanupProjectilesOutsideRange(_laneMaxX);
-
-            return result;
         }
 
         private void SimulateProjectile(
@@ -192,7 +196,8 @@ namespace _Project.Scripts.Gameplay.Simulation
 
         private List<LaneEvent> CollectEventsOnSegment(LaneState lane, float prevX, float nextX)
         {
-            var events = new List<LaneEvent>();
+            _eventsBuffer.Clear();
+            var events = _eventsBuffer;
 
             foreach (var slot in lane.BuildSlots)
             {

@@ -90,7 +90,7 @@ namespace _Project.Scripts.Gameplay.View
 
             foreach (var fire in stepResult.GunFires)
             {
-                if (_buildingViews.TryGetValue(fire.GunId, out var buildingView))
+                if (_buildingViews.TryGetValue(fire.SlotId, out var buildingView))
                 {
                     buildingView.PlayFeedback();
                 }
@@ -105,12 +105,12 @@ namespace _Project.Scripts.Gameplay.View
             }
         }
 
-        public void SpawnBuildingView(BuildingState building, BuildingDefinition definition)
+        public void SpawnBuildingView(int slotId, BuildingState building, BuildingDefinition definition)
         {
             var view = Instantiate(definition.Prefab, _buildingRoot);
             view.Initialize(building.Id, definition);
             view.SetWorldPosition(LaneToWorld(building.PositionX));
-            _buildingViews.Add(building.Id, view);
+            _buildingViews.Add(slotId, view);
         }
 
         public void RemoveBuildingView(int slotId)

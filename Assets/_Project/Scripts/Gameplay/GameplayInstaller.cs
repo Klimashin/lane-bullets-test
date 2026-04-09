@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Gameplay
 {
-    public class GameplayInstaller : MonoBehaviour, IInstaller
+    public sealed class GameplayInstaller : MonoBehaviour, IInstaller
     {
         [SerializeField] private Camera _camera = null!;
         [SerializeField] private GameplayController _gameplayController = null!;
