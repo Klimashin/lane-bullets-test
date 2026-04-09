@@ -13,19 +13,19 @@ MonoBehaviour:
   m_Name: GameplayConfig
   m_EditorClassIdentifier: Game::_Project.Scripts.Gameplay.Data.GameplayConfig
   Lanes:
-  - BuildSlotCount: 5
+  - BuildSlotCount: 6
+    TargetHealthValues:
+    - 2
+    - 10
+    - 100
+    - 4000
+  - BuildSlotCount: 6
     TargetHealthValues:
     - 2
     - 10
     - 100
     - 4000
   - BuildSlotCount: 5
-    TargetHealthValues:
-    - 2
-    - 10
-    - 100
-    - 4000
-  - BuildSlotCount: 4
     TargetHealthValues:
     - 10
     - 100
