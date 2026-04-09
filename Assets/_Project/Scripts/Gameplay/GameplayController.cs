@@ -12,6 +12,7 @@ namespace _Project.Scripts.Gameplay
         [SerializeField] private LaneView _laneViewPrefab = null!;
 
         public int SimulationSpeed { get; private set; } = 1;
+        public GunsControlMode GunsControlMode => _simulator?.Mode ?? GunsControlMode.Manual;
 
         private LaneSimulator? _simulator;
         private readonly List<LaneView> _laneViews = new();
@@ -26,25 +27,11 @@ namespace _Project.Scripts.Gameplay
 
         private void Start()
         {
-            var simulationConfig = new LaneSimulationConfig
-            {
-                LaneStartX = _config.LaneStartX,
-                LaneLength = _config.LaneLength,
-                BuildSlotSpacing = _config.BuildSlotSpacing,
-                BuildingSlotsOffsetX = _config.BuildingSlotsOffsetX,
-                TargetsSpacing = _config.TargetsSpacing,
-                FirstTargetOffsetFromBuilding = _config.FirstTargetOffsetFromBuilding,
-                TargetOffsetX = _config.TargetOffsetX
-            };
-
-            var laneBaseY = _config.LaneBaseY;
-            var laneSpacing = _config.LaneSpacing;
-
-            _simulator = new LaneSimulator(simulationConfig, _config.Lanes);
+            _simulator = new LaneSimulator(_config, _config.Lanes);
 
             for (int i = 0; i < _simulator.LaneStates.Count; i++)
             {
-                float worldY = laneBaseY + i * laneSpacing;
+                float worldY = _config.LaneBaseY + i * _config.LaneSpacing;
                 var laneView = Instantiate(_laneViewPrefab, transform);
                 laneView.Initialize(_simulator.LaneStates[i], i, worldY);
                 laneView.BuildingRemoveRequested += OnBuildingRemoveRequested;
@@ -88,8 +75,6 @@ namespace _Project.Scripts.Gameplay
         {
             _simulator?.TriggerAllGuns();
         }
-
-        public GunsControlMode GunsControlMode => _simulator?.Mode ?? GunsControlMode.Manual;
 
         public void SetGunsControlMode(GunsControlMode mode)
         {

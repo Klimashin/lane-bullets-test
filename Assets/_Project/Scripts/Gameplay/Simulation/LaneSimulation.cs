@@ -28,7 +28,7 @@ namespace _Project.Scripts.Gameplay.Simulation
             }
         }
 
-        public LaneSimulator(LaneSimulationConfig config, IReadOnlyList<LaneConfig> laneConfigs)
+        public LaneSimulator(GameplayConfig config, IReadOnlyList<LaneConfig> laneConfigs)
         {
             _laneStartX = config.LaneStartX;
             _laneMaxX = config.LaneStartX + config.LaneLength;
@@ -107,7 +107,7 @@ namespace _Project.Scripts.Gameplay.Simulation
             _laneStates[laneId].BuildSlots[slotId].RemoveBuilding();
         }
 
-        private static LaneState CreateLane(LaneSimulationConfig config, LaneConfig laneConfig)
+        private static LaneState CreateLane(GameplayConfig config, LaneConfig laneConfig)
         {
             var lane = new LaneState();
 
